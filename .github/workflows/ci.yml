@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  etl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Run ETL notebook
+        run: jupyter nbconvert --to notebook --execute "ETL_Mini_Project_FTabatabaei_TNguyen_UOlusoga_JZhang.ipynb.ipynb" --output /tmp/executed.ipynb
+      - name: Outputs match committed CSVs
+        run: git diff --ignore-cr-at-eol --exit-code -- Resources
+      - name: Outputs match schema
+        run: pytest -q
